@@ -1,0 +1,152 @@
+﻿@page "/elevator"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>Elevator Simulation</PageTitle>
+<h4>Elevator States</h4>
+<hr />
+
+@if (elevatorStates == null || !elevatorStates.Any())
+{
+    <p>Loading elevator states...</p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8 my-1">
+            <div class="row">
+                @foreach (var state in elevatorStates.Where(s=> s != null))
+                {
+                    <div class="col my-3">
+                        <div class="card">
+                            <div class="card-header text-white font-weight-bold" style="background-color: #1A2843;">
+                                Elevator &nbsp; @state.Id
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Current Floor: @state.CurrentFloor</p>
+                                <p class="card-text">Current Load: @state.CurrentLoad</p>
+                                <p class="card-text">Direction: @state.Direction</p>
+                                <p class="card-text">Status: @state.Status</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+            </div>
+            
+        </div>
+        <div class=" col-md-4 my-1">
+            <div class="row">
+                <div class="col my-3">
+                    <div class="card">
+                        <div class="card-header text-white font-weight-bold" style="background-color: #2B6197;">
+                            
+                            Request Elevator
+                        </div>
+                        <div class="card-body">
+
+                            @if (isFormVisible)
+                            {
+                                <div class="request-form">
+
+                                    <EditForm Model="@elevatorRequest" OnValidSubmit="HandleValidSubmit">
+                                        <DataAnnotationsValidator />
+                                        <ValidationSummary />
+
+                                        <div class="mb-3">
+                                            <label for="toFloor" class="form-label">To Floor</label>
+                                            <InputNumber id="toFloor"
+                                                         @bind-Value="ToFloor"
+                                                         class="form-control form-control-sm"
+                                                         min="0" max="10" />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="peopleCount" class="form-label">Number of Passengers</label>
+                                            <InputNumber id="peopleCount"
+                                                         @bind-Value="PeopleCount"
+                                                         class="form-control form-control-sm" />
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <button type="submit" class="btn btn-sm btn-success form-control form-control-sm" >Submit</button>
+                                        </div>
+                                    </EditForm>
+
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+<hr />
+
+<div class="my-1">
+    <p>Time Taken: @responseTime ms</p>
+</div>
+
+<hr />
+
+<div class="row">
+    <div class="col my-1">
+        <div class="d-flex flex-wrap justify-content-between">
+            @foreach (var floor in Floors)
+            {
+                <div class="floor-card mb-1" style="flex: 0 0 calc(20% - 10px); margin-right: 10px;">
+                    <!-- 20% width with spacing -->
+                    <div class="card">
+                        <div class="card-header text-white text-center" style="background-color: #808080;">
+                            Floor @floor.Id
+                        </div>
+                        <div class="card-body text-center">
+                            <button class="btn btn-sm text-white me-1" style="background-color: #1F356A;" @onclick="() => OpenRequestForm(floor.Id, 1)">Up</button>
+                            <button class="btn btn-outline-dark btn-sm me-1" @onclick="() => OpenRequestForm(floor.Id, 2)">Down</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@* <div class="row">
+    @foreach (var floor in Floors)
+    {
+        <div class="col-6 col-md-3 mb-2">
+            <!-- 5 columns per row on md and larger -->
+            <div class="card floor-card">
+                <div class="card-header text-white text-center" style="background-color: #808080;">
+                    Floor @floor.Id
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-sm text-white me-1" style="background-color: #302626;" @onclick="() => OpenRequestForm(floor.Id, 1)">Up</button>
+                    <button class="btn btn-success btn-sm me-1" @onclick="() => OpenRequestForm(floor.Id, 2)">Down</button>
+                </div>
+            </div>
+        </div>
+    }
+</div> *@
+
+<hr />
+
+<div class="row">
+    <div class="col my-1">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+    </div>
+</div>
+
+<hr />
